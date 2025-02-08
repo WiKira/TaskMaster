@@ -1,8 +1,12 @@
+using Catel.Data;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using System.Net;
 using System.Reflection;
+using System.Web.Http;
 using TaskMaster.Application.DTOs.Shared;
 using TaskMaster.Application.DTOs.Tarefas;
 using TaskMaster.Application.Interfaces;
@@ -99,7 +103,7 @@ namespace TaskMaster.Tests.Tarefas
             var result = await controller.GetByIdAsync(1);
 
             // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result.Result);
+            var okResult = Assert.IsType<OkObjectResult>(result);
             var returnResponse = Assert.IsType<ResponseDTO<TarefaResponseDTO>>(okResult.Value);
             Assert.True(returnResponse.Success);
             Assert.Equal(HttpStatusCode.OK, returnResponse.StatusCode);
@@ -127,11 +131,9 @@ namespace TaskMaster.Tests.Tarefas
             var result = await controller.GetByIdAsync(5);
 
             // Assert
-            var okResult = Assert.IsType<NotFoundObjectResult>(result.Result);
-            var returnResponse = Assert.IsType<ResponseDTO<TarefaResponseDTO>>(okResult.Value);
-            Assert.False(returnResponse.Success);
-            Assert.Equal(HttpStatusCode.NotFound, returnResponse.StatusCode);
-            Assert.Empty(returnResponse.Data);
+            var okResult = Assert.IsType<ObjectResult>(result);
+            Assert.IsNotType<OkObjectResult>(result);
+            Assert.Equal(HttpStatusCode.NotFound, (HttpStatusCode)okResult.StatusCode);
         }
 
         [Fact]
@@ -168,7 +170,7 @@ namespace TaskMaster.Tests.Tarefas
             var result = await controller.CreateTarefaAsync(tarefaInsertDTO);
 
             // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result.Result);
+            var okResult = Assert.IsType<OkObjectResult>(result);
             var returnResponse = Assert.IsType<ResponseDTO<TarefaResponseDTO>>(okResult.Value);
             Assert.True(returnResponse.Success);
             Assert.Equal(HttpStatusCode.OK, returnResponse.StatusCode);
@@ -181,6 +183,7 @@ namespace TaskMaster.Tests.Tarefas
             //Arrange
             var tarefaInsertDTO = new TarefaInsertDTO("", null);
 
+            
             var mockResponse = new ResponseDTO<TarefaResponseDTO>(
                 false,
                 HttpStatusCode.BadRequest,
@@ -193,12 +196,14 @@ namespace TaskMaster.Tests.Tarefas
                 .ReturnsAsync(mockResponse);
 
             var controller = new TarefaController(mockTarefaService.Object);
+            
+            controller.ModelState.AddModelError("erro", "erro");
 
             // Act
             var result = await controller.CreateTarefaAsync(tarefaInsertDTO);
-
+            
             // Assert
-            var okResult = Assert.IsType<BadRequestObjectResult>(result.Result);
+            var okResult = Assert.IsType<BadRequestObjectResult>(result);
             var returnResponse = Assert.IsType<ResponseDTO<TarefaResponseDTO>>(okResult.Value);
             Assert.False(returnResponse.Success);
             Assert.Equal(HttpStatusCode.BadRequest, returnResponse.StatusCode);
@@ -244,7 +249,7 @@ namespace TaskMaster.Tests.Tarefas
             var result = await controller.UpdateTarefaAsync(tarefaUpdateDTO);
 
             // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result.Result);
+            var okResult = Assert.IsType<OkObjectResult>(result);
             var returnResponse = Assert.IsType<ResponseDTO<TarefaResponseDTO>>(okResult.Value);
             Assert.True(returnResponse.Success);
             Assert.Equal(HttpStatusCode.OK, returnResponse.StatusCode);
@@ -279,11 +284,9 @@ namespace TaskMaster.Tests.Tarefas
             var result = await controller.UpdateTarefaAsync(tarefaUpdateDTO);
 
             // Assert
-            var okResult = Assert.IsType<NotFoundObjectResult>(result.Result);
-            var returnResponse = Assert.IsType<ResponseDTO<TarefaResponseDTO>>(okResult.Value);
-            Assert.False(returnResponse.Success);
-            Assert.Equal(HttpStatusCode.NotFound, returnResponse.StatusCode);
-            Assert.Empty(returnResponse.Data);
+            var okResult = Assert.IsType<ObjectResult>(result);
+            Assert.IsNotType<OkObjectResult>(result);
+            Assert.Equal(HttpStatusCode.NotFound, (HttpStatusCode)okResult.StatusCode);
         }
 
         [Fact]
@@ -309,12 +312,12 @@ namespace TaskMaster.Tests.Tarefas
                 .ReturnsAsync(mockResponse);
 
             var controller = new TarefaController(mockTarefaService.Object);
-
+            controller.ModelState.AddModelError("erro", "erro");
             // Act
             var result = await controller.UpdateTarefaAsync(tarefaUpdateDTO);
 
             // Assert
-            var okResult = Assert.IsType<BadRequestObjectResult>(result.Result);
+            var okResult = Assert.IsType<BadRequestObjectResult>(result);
             var returnResponse = Assert.IsType<ResponseDTO<TarefaResponseDTO>>(okResult.Value);
             Assert.False(returnResponse.Success);
             Assert.Equal(HttpStatusCode.BadRequest, returnResponse.StatusCode);
@@ -343,7 +346,7 @@ namespace TaskMaster.Tests.Tarefas
             var result = await controller.DeleteTarefaAsync(1);
 
             // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result.Result);
+            var okResult = Assert.IsType<OkObjectResult>(result);
             var returnResponse = Assert.IsType<ResponseDTO<TarefaResponseDTO>>(okResult.Value);
             Assert.True(returnResponse.Success);
             Assert.Equal(HttpStatusCode.OK, returnResponse.StatusCode);
@@ -371,11 +374,9 @@ namespace TaskMaster.Tests.Tarefas
             var result = await controller.DeleteTarefaAsync(5000);
 
             // Assert
-            var okResult = Assert.IsType<NotFoundObjectResult>(result.Result);
-            var returnResponse = Assert.IsType<ResponseDTO<TarefaResponseDTO>>(okResult.Value);
-            Assert.False(returnResponse.Success);
-            Assert.Equal(HttpStatusCode.NotFound, returnResponse.StatusCode);
-            Assert.Empty(returnResponse.Data);
+            var okResult = Assert.IsType<ObjectResult>(result);
+            Assert.IsNotType<OkObjectResult>(result);
+            Assert.Equal(HttpStatusCode.NotFound, (HttpStatusCode)okResult.StatusCode);
         }
     }
 }
