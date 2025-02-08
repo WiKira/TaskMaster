@@ -1,0 +1,7 @@
+@Presentation_HostAddress = https://localhost:7081
+
+GET {{Presentation_HostAddress}}/api/Tarefa/4
+Accept: application/json
+
+
+###
